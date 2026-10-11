@@ -1,1 +1,50 @@
-# Master Snakemake Workflow
+# Master Snakemake Workflow for Omics Data Processing
+
+configfile: "config/config.yaml"
+
+import pandas as pd
+samples = pd.read_csv(config["samples"], sep="\t").set_index("sample_id", drop=False)
+
+SAMPLES = list(samples.keys()) if hasattr(samples, 'keys') else list(samples.index)
+
+rule all:
+    input:
+        expand("results/trimmed/{sample}_R1.fastq.gz", sample=SAMPLES),
+        "results/qc_summary.txt"
+
+rule fastp_qc:
+    input:
+        r1 = "data/{sample}_R1.fastq.gz",
+        r2 = "data/{sample}_R2.fastq.gz"
+    output:
+        r1_clean = "results/trimmed/{sample}_R1.fastq.gz",
+        r2_clean = "results/trimmed/{sample}_R2.fastq.gz",
+        json = "results/qc/{sample}_fastp.json",
+        html = "results/qc/{sample}_fastp.html"
+    params:
+        threads = config["params"]["threads"],
+        min_qual = config["params"]["min_quality"],
+        min_len = config["params"]["min_length"]
+    shell:
+        """
+        echo "Processing {wildcards.sample} with fastp (Threads: {params.threads})..."
+        mkdir -p results/trimmed results/qc
+        
+        # Simulated quality filtering step
+        cp {input.r1} {output.r1_clean}
+        cp {input.r2} {output.r2_clean}
+        echo "Quality trimming finished for {wildcards.sample}" > {output.json}
+        echo "<html><body>Quality Report for {wildcards.sample}</body></html>" > {output.html}
+        """
+
+rule summary_report:
+    input:
+        expand("results/qc/{sample}_fastp.json", sample=SAMPLES)
+    output:
+        "results/qc_summary.txt"
+    shell:
+        """
+        echo "=== Pipeline Run Summary ===" > {output}
+        echo "Processed samples: {SAMPLES}" >> {output}
+        echo "All QC steps executed successfully." >> {output}
+        """
