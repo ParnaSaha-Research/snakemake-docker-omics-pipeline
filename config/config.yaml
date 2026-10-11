@@ -1,8 +1,4 @@
-YAML
-# Pipeline Configuration Settings
-samples: "config/samples.tsv"
-
+# Configuration for Fungal ITS Contigs Pipeline
+fasta_input: "data/fungal_its_contigs.fasta"
 params:
-  threads: 4
-  min_quality: 20
-  min_length: 50
+  min_length: 100
