@@ -1,11 +1,3 @@
-# Master Snakemake Workflow for Fungal ITS Contig Analysis
-
-configfile: "config/config.yaml"
-
-rule all:
-    input:
-        "results/its_summary_report.txt"
-
 rule parse_its_fasta:
     input:
         fasta = config["fasta_input"]
@@ -18,18 +10,18 @@ rule parse_its_fasta:
         echo "=== Fungal ITS Contig Summary Report ===" > {output.report}
         echo "Input File: {input.fasta}" >> {output.report}
         echo "----------------------------------------" >> {output.report}
-
+        
         # Parse headers and sequence lengths
         awk '
             /^>/ {{
                 if (seq) print id, length(seq);
                 id = substr($0, 2);
                 seq = "";
-            }
+            }}
             !/^>/ {{ seq = seq $0; }}
             END {{ if (seq) print id, length(seq); }}
         ' {input.fasta} >> {output.report}
-
+        
         echo "----------------------------------------" >> {output.report}
         echo "All 34 ITS contigs processed successfully." >> {output.report}
         """
