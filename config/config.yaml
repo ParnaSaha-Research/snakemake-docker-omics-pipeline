@@ -1,0 +1,8 @@
+YAML
+# Pipeline Configuration Settings
+samples: "config/samples.tsv"
+
+params:
+  threads: 4
+  min_quality: 20
+  min_length: 50
